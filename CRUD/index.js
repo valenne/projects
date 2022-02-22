@@ -15,6 +15,12 @@ http
     const contenido_archivo = params.contenido;
 
     // paso 3 crud
+    function validation(archivo) {
+      const validation =
+        fs.existsSync(`../CRUD/${archivo}`) &&
+        fs.lstatSync(`../CRUD/${archivo}`).isFile();
+      return validation;
+    }
 
     // crear
     if (request.url.includes("/crear")) {
@@ -25,10 +31,27 @@ http
 
       today = mm + "/" + dd + "/" + yyyy;
 
-      fs.writeFile(nombre_archivo, `${today} - ${contenido_archivo}`, () => {
-        response.write("El archivo fue creado 😀");
-        response.end();
-      });
+      console.log(validation(nombre_archivo));
+      if (validation(nombre_archivo) == false) {
+        fs.writeFile(
+          nombre_archivo,
+          `${today} - ${contenido_archivo}/n`,
+          () => {
+            response.write("El archivo fue creado 😀");
+            response.end();
+          }
+        );
+      } else {
+        fs.appendFile(
+          nombre_archivo,
+
+          `${today} - ${contenido_archivo}`,
+          () => {
+            response.write("El texto fue agregado 😀");
+            response.end();
+          }
+        );
+      }
     }
 
     // leer
@@ -48,11 +71,8 @@ http
     if (request.url.includes("/renombrar")) {
       const nombre_cambiar = params.nombre;
       const nuevo_nombre = params.nuevoNombre;
-      const validation =
-        fs.existsSync(`../desafio_servidores/${nombre_cambiar}`) &&
-        fs.lstatSync(`../desafio_servidores/${nombre_cambiar}`).isFile();
 
-      if (validation) {
+      if (validation(nombre_cambiar) == true) {
         fs.rename(nombre_cambiar, nuevo_nombre, (err, data) => {
           response.write(
             `El archivo ${nombre_cambiar} fue renombrado a ${nuevo_nombre}`
@@ -104,4 +124,7 @@ http
       }
     }
   })
-  .listen(8080, () => console.log("Escuchando el puerto 8080"));
+  .listen(8080, () => {
+    console.log("Escuchando el puerto 8080");
+    console.log("http://127.0.0.1:5500/CRUD/index.html");
+  });
